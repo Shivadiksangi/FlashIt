@@ -1,12 +1,12 @@
-/* ============================================================
-   FetchhIt — Professional UI
+﻿/* ============================================================
+   FetchhIt â€” Professional UI
    Fonts  : Plus Jakarta Sans (body) + Bricolage Grotesque (display)
    Palette: Navy #1b2f5e | Teal #0891b2 | BG #f0f4f9
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap');
 
-/* ── Design tokens ──────────────────────────────────────── */
+/* â”€â”€ Design tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --navy:         #1b2f5e;
   --navy-2:       #142449;
@@ -37,7 +37,7 @@
   --shadow-2:     var(--shadow-lg);
 }
 
-/* ── Reset ────────────────────────────────────────────── */
+/* â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *,*::before,*::after{box-sizing:border-box}
 html{color-scheme:light}
 body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
@@ -52,8 +52,8 @@ a{color:inherit;text-decoration:none}
 .skip-link:focus{transform:translateY(0);outline:none}
 
 /* ============================================================
-   NAVBAR — 3-column flexbox: LEFT | CENTER | RIGHT
-   No absolute positioning — guaranteed no overlap
+   NAVBAR â€” 3-column flexbox: LEFT | CENTER | RIGHT
+   No absolute positioning â€” guaranteed no overlap
    ============================================================ */
 .topbar {
   background: #fff;
@@ -64,7 +64,7 @@ a{color:inherit;text-decoration:none}
   box-shadow: 0 2px 16px rgba(15,23,42,0.07);
 }
 
-/* ── Tier 1: 3-column flex row ──────────────────────────── */
+/* â”€â”€ Tier 1: 3-column flex row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .topbar__inner {
   display: flex;
   align-items: center;
@@ -74,7 +74,7 @@ a{color:inherit;text-decoration:none}
   min-height: 68px;
 }
 
-/* ── LEFT: Logo — fixed width, never shrinks ─────────────── */
+/* â”€â”€ LEFT: Logo â€” fixed width, never shrinks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .brand {
   display: flex;
   align-items: center;
@@ -112,7 +112,7 @@ a{color:inherit;text-decoration:none}
   letter-spacing: 0.03em;
 }
 
-/* ── CENTER: Search — flex-grow fills middle, has max-width ─ */
+/* â”€â”€ CENTER: Search â€” flex-grow fills middle, has max-width â”€ */
 .search {
   flex: 1 1 auto;          /* grow to fill space between logo & buttons */
   max-width: 520px;        /* never too wide */
@@ -157,7 +157,7 @@ a{color:inherit;text-decoration:none}
 }
 .search__btn:hover { background: var(--navy-2); }
 
-/* ── RIGHT: Auth buttons — fixed width, equal gap ────────── */
+/* â”€â”€ RIGHT: Auth buttons â€” fixed width, equal gap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .topbar__actions {
   flex: 0 0 auto;          /* never grow or shrink */
   display: flex;
@@ -179,7 +179,7 @@ a{color:inherit;text-decoration:none}
   border-color: rgba(27,47,94,0.3);
   color: var(--navy);
 }
-/* Become Seller — filled navy */
+/* Become Seller â€” filled navy */
 .topbar .btn--white {
   background: var(--navy);
   color: #fff;
@@ -191,7 +191,7 @@ a{color:inherit;text-decoration:none}
 }
 .topbar .btn--white:hover { background: var(--navy-2); border-color: var(--navy-2); }
 
-/* ── Tier 2: Full-width navy nav strip ───────────────────── */
+/* â”€â”€ Tier 2: Full-width navy nav strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .topbar__nav-strip { background: var(--navy); }
 .topbar__nav-strip-inner {
   display: flex;
@@ -202,13 +202,13 @@ a{color:inherit;text-decoration:none}
 .topbar__nav-strip-inner::-webkit-scrollbar { display: none; }
 
 
-/* Nav links — bigger font & padding as requested */
+/* Nav links â€” bigger font & padding as requested */
 .nav-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;      /* ★ increased from 10px 18px */
-  font-size: 15px;          /* ★ increased from 13px */
+  padding: 12px 20px;      /* â˜… increased from 10px 18px */
+  font-size: 15px;          /* â˜… increased from 13px */
   font-weight: 600;
   color: rgba(255,255,255,0.82);
   border-bottom: 3px solid transparent;
@@ -256,7 +256,7 @@ a{color:inherit;text-decoration:none}
 .link:hover{text-decoration:underline}
 
 /* ============================================================
-   CATEGORY BAR  — centered pills, 28px icons, scale hover
+   CATEGORY BAR  â€” centered pills, 28px icons, scale hover
    ============================================================ */
 .categories{background:#fff;border-bottom:1px solid var(--line)}
 .categories__inner{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 0;overflow-x:auto;scrollbar-width:none}
@@ -271,7 +271,7 @@ a{color:inherit;text-decoration:none}
 .category.is-active .category__label{color:#fff}
 
 /* ============================================================
-   BANNER  — consistent tiles with equal height rows + gap
+   BANNER  â€” consistent tiles with equal height rows + gap
    ============================================================ */
 .banner{padding:16px 0 8px}
 .banner__card{position:relative;overflow:hidden;border-radius:20px;background:radial-gradient(800px 420px at 0% 55%,rgba(27,47,94,0.95),transparent 58%),radial-gradient(600px 380px at 90% 80%,rgba(8,145,178,0.28),transparent 55%),linear-gradient(135deg,#07111f,#0d1e40);color:#fff;min-height:240px;box-shadow:0 8px 32px rgba(7,17,31,0.22);border:1px solid rgba(255,255,255,0.04)}
@@ -283,7 +283,7 @@ a{color:inherit;text-decoration:none}
 .banner__subtitle{margin:0 0 22px;color:rgba(255,255,255,0.72);font-size:14px;line-height:1.6}
 .banner__cta{display:inline-flex;flex-wrap:wrap;gap:10px}
 
-/* ★ Equal-height, equal-gap tiles */
+/* â˜… Equal-height, equal-gap tiles */
 .banner__tiles{position:absolute;right:28px;top:50%;transform:translateY(-50%);display:grid;grid-template-rows:repeat(3,1fr);gap:12px;width:min(240px,34%);z-index:1}
 .tile{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 18px;backdrop-filter:blur(10px);transition:background 150ms;display:flex;flex-direction:column;justify-content:center}
 .tile:hover{background:rgba(255,255,255,0.12)}
@@ -295,6 +295,7 @@ a{color:inherit;text-decoration:none}
    ============================================================ */
 .page{padding:18px 0 40px}
 .page__grid{display:grid;grid-template-columns:252px 1fr 272px;gap:16px;align-items:start}
+.page__grid--compact{grid-template-columns:252px minmax(0,1fr)}
 
 /* ============================================================
    PANEL
@@ -325,7 +326,7 @@ a{color:inherit;text-decoration:none}
 .radio__dot{border-radius:999px}
 .check__label,.radio__label{font-size:13px;font-weight:600;color:var(--text)}
 .check__input:checked + .check__box{background:var(--navy);border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,47,94,0.12)}
-.check__input:checked + .check__box::after{content:"✓";color:#fff;font-size:12px;font-weight:900}
+.check__input:checked + .check__box::after{content:"âœ“";color:#fff;font-size:12px;font-weight:900}
 .radio__input:checked + .radio__dot{border-color:var(--navy);box-shadow:0 0 0 3px rgba(27,47,94,0.12)}
 .radio__input:checked + .radio__dot::after{content:"";width:8px;height:8px;border-radius:999px;background:var(--navy)}
 
@@ -391,6 +392,7 @@ box-shadow:inset 0 0 0 1px rgba(27,47,94,0.08)}
    PRODUCT GRID + CARDS
    ============================================================ */
 .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.page__grid--compact .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .grid--info{grid-template-columns:1fr}
 .grid.is-entering .card{animation:cardIn 260ms ease both}
 @keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -459,9 +461,14 @@ box-shadow:inset 0 0 0 1px rgba(27,47,94,0.08)}
 .request-action{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;transition:transform 120ms,box-shadow 120ms,border-color 120ms}
 .request-action:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,23,42,0.08)}
 .request-action--accept{border-color:rgba(22,101,52,0.2);background:#eefbf3;color:#166534}
+.request-action--counter{border-color:rgba(59,130,246,0.18);background:#eff6ff;color:#1d4ed8}
+.request-action--pending{border-color:rgba(217,119,6,0.2);background:#fff7ed;color:#b45309}
+.request-action--details{border-color:rgba(124,58,237,0.18);background:#f5f3ff;color:#6d28d9}
 .request-action--reject{border-color:rgba(185,28,28,0.18);background:#fef2f2;color:#b91c1c}
 .badge{padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap}
 .badge--active{background:rgba(27,47,94,0.09);border-color:rgba(27,47,94,0.2);color:var(--navy)}
+.badge--warning{background:#fff7ed;border-color:rgba(217,119,6,0.18);color:#b45309}
+.badge--danger{background:#fef2f2;border-color:rgba(185,28,28,0.18);color:#b91c1c}
 
 /* ============================================================
    MODALS

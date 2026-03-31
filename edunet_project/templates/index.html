@@ -1,19 +1,19 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     {% load static %}
     {% csrf_token %}
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260331g">
 <script>
   window.ASSET_IMAGE_OPTIONS = {{ asset_image_options_json|safe }};
 </script>
-<script src="{% static 'css/js/script.js' %}?v=20260327"></script>
+<script src="{% static 'css/js/script.js' %}?v=20260331f" defer></script>
 
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="FetchhIt — a reverse e-commerce marketplace where buyers request deals and sellers post items." />
-    <title>FetchhIt — Deal your way</title>
+    <meta name="description" content="FetchhIt - a reverse e-commerce marketplace where buyers request deals and sellers post items." />
+    <title>FetchhIt - Deal your way</title>
 
     <!-- Font (no framework; safe fallback to system fonts) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,7 +28,7 @@
 
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <!-- Navbar: LEFT logo | CENTER search | RIGHT auth — no overlap guaranteed -->
+    <!-- Navbar: LEFT logo | CENTER search | RIGHT auth - no overlap guaranteed -->
     <header class="topbar" role="banner">
 
       <!-- Tier 1: 3-column flex layout -->
@@ -43,22 +43,22 @@
           </span>
         </a>
 
-        <!-- CENTER: Search bar — flex-grow, never overlaps buttons -->
+        <!-- CENTER: Search bar - flex-grow, never overlaps buttons -->
         <form class="search" role="search" aria-label="Search items">
           <label class="sr-only" for="search">Search</label>
           <input
             id="search"
             class="search__input"
             type="search"
-            placeholder="Search buyer requests — mobiles, laptops, shoes..."
+            placeholder="Search buyer requests - mobiles, laptops, shoes..."
             autocomplete="off"
           />
           <button class="search__btn" type="submit" aria-label="Search">Search</button>
         </form>
 
-        <!-- RIGHT: Auth buttons — equal gap, right-aligned -->
+        <!-- RIGHT: Auth buttons - equal gap, right-aligned -->
         <nav class="topbar__actions" aria-label="Account">
-          <button id="aiSuggestBtn" class="btn btn--ghost" type="button">AI Suggestion</button>
+          <a id="aiSuggestBtn" class="btn btn--ghost" href="http://127.0.0.1:8501" target="_blank" rel="noopener noreferrer">AI Suggestion</a>
           <a id="navLogin" class="btn btn--ghost" href="#login-modal">Login</a>
           
           <button id="navLogout" class="btn btn--ghost" type="button" hidden>Logout</button>
@@ -116,14 +116,14 @@
             <h1 class="banner__title">Buyers request. Sellers respond.</h1>
             <p class="banner__subtitle">
               Post items you can supply, discover live buyer requests, and negotiate the best deal.
-              Instead of “Buy Now”, hit <strong>Request Deal</strong>.
+              Instead of "Buy Now", hit <strong>Request Deal</strong>.
             </p>
             <div class="banner__cta">
               <a class="btn btn--primary" href="#post-modal">Post an Item →</a>
             </div>
           </div>
 
-          <!-- Decorative “offer tiles” -->
+          <!-- Decorative offer tiles -->
           <div class="banner__tiles" aria-hidden="true">
             <div class="tile">
               <p class="tile__kicker">Trending</p>
@@ -292,7 +292,7 @@
             <div>
               <h2 id="contentSectionTitle" class="content__title">Buyer Requests</h2>
               <p id="contentSectionSubtitle" class="content__subtitle">
-                FetchhIt is reverse e‑commerce: buyers request items, sellers make offers.
+                FetchhIt is reverse e-commerce: buyers request items, sellers make offers.
               </p>
               <p id="requestDealMessage" class="form-success form-inline" role="status" aria-live="polite" hidden></p>
             </div>
@@ -320,7 +320,7 @@
               </div>
               <div class="card__body">
                 <header class="card__top">
-                  <h3 class="card__title">iPhone 13 (128GB) — Blue</h3>
+                  <h3 class="card__title">iPhone 13 (128GB) - Blue</h3>
                   <span class="tag tag--mobiles">Mobiles</span>
                 </header>
                 <p class="card__price" aria-label="Requested price">₹ 42,999</p>
@@ -344,7 +344,7 @@
               </div>
               <div class="card__body">
                 <header class="card__top">
-                  <h3 class="card__title">Running Sneakers — Size 9</h3>
+                  <h3 class="card__title">Running Sneakers - Size 9</h3>
                   <span class="tag tag--fashion">Fashion</span>
                 </header>
                 <p class="card__price" aria-label="Requested price">₹ 2,499</p>
@@ -367,7 +367,7 @@
               </div>
               <div class="card__body">
                 <header class="card__top">
-                  <h3 class="card__title">Gaming Laptop — i7 / 16GB / RTX</h3>
+                  <h3 class="card__title">Gaming Laptop - i7 / 16GB / RTX</h3>
                   <span class="tag tag--electronics">Electronics</span>
                 </header>
                 <p class="card__price" aria-label="Requested price">₹ 74,990</p>
@@ -390,7 +390,7 @@
               </div>
               <div class="card__body">
                 <header class="card__top">
-                  <h3 class="card__title">Sofa Set — 3+1+1</h3>
+                  <h3 class="card__title">Sofa Set - 3+1+1</h3>
                   <span class="tag tag--home">Home</span>
                 </header>
                 <p class="card__price" aria-label="Requested price">₹ 18,500</p>
@@ -436,7 +436,7 @@
               </div>
               <div class="card__body">
                 <header class="card__top">
-                  <h3 class="card__title">Bluetooth Earbuds — ANC</h3>
+                  <h3 class="card__title">Bluetooth Earbuds - ANC</h3>
                   <span class="tag tag--electronics">Electronics</span>
                 </header>
                 <p class="card__price" aria-label="Requested price">₹ 3,299</p>
@@ -454,7 +454,7 @@
           <header class="panel__header panel__header--row">
             <div>
               <h2 id="requestsPanelTitle" class="panel__title">Your Requests</h2>
-              <p id="requestsPanelSubtitle" class="panel__subtitle">Items you’ve asked sellers for</p>
+              <p id="requestsPanelSubtitle" class="panel__subtitle">Items you've asked sellers for</p>
             </div>
             <a class="link" href="#post-modal">+ Post</a>
           </header>
@@ -499,7 +499,7 @@
       <div class="modal__panel" role="document">
         <header class="modal__header">
           <h2 id="postItemModalTitle" class="modal__title">Post an Item (Seller)</h2>
-          <a class="icon-btn" href="#" aria-label="Close">×</a>
+          <a class="icon-btn" href="#" aria-label="Close">&times;</a>
         </header>
 
         <form id="postItemForm" class="modal__form" action="#" method="post" novalidate>
@@ -517,6 +517,19 @@
               inputmode="numeric"
               placeholder="e.g. 14999"
               required
+            />
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="itemDiscount">Discount (%)</label>
+            <input
+              id="itemDiscount"
+              class="field__input"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              max="90"
+              placeholder="e.g. 15"
             />
           </div>
 
@@ -553,6 +566,7 @@
 
           <div class="modal__actions">
             <button id="postItemSubmit" class="btn btn--primary btn--block" type="submit">Post Item</button>
+            <button id="postItemDelete" class="btn btn--outline btn--block" type="button" hidden>Delete Item</button>
             <a class="btn btn--ghost btn--block" href="#">Cancel</a>
           </div>
 
@@ -569,7 +583,7 @@
       <div class="modal__panel" role="document">
         <header class="modal__header">
           <h2 class="modal__title">Request Deal</h2>
-          <a class="icon-btn" href="#" aria-label="Close">×</a>
+          <a class="icon-btn" href="#" aria-label="Close">&times;</a>
         </header>
 
         <form id="dealForm" class="modal__form" action="#" method="post" novalidate>
@@ -595,6 +609,15 @@
               <option value="card">Card</option>
               <option value="bank_transfer">Bank Transfer</option>
               <option value="cash_on_delivery">Cash on Delivery</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="dealDeliveryMode">Delivery mode</label>
+            <select id="dealDeliveryMode" class="field__input" required>
+              <option value="home_delivery">Home Delivery</option>
+              <option value="pickup">Pickup</option>
+              <option value="meetup">Meetup</option>
             </select>
           </div>
 
@@ -681,7 +704,7 @@
       <div class="modal__panel" role="document">
         <header class="modal__header">
           <h2 class="modal__title">Login to FetchhIt</h2>
-          <a class="icon-btn" href="#" aria-label="Close">×</a>
+          <a class="icon-btn" href="#" aria-label="Close">&times;</a>
         </header>
 
         <form id="loginForm" class="modal__form" action="#" method="post" novalidate>
@@ -734,7 +757,7 @@
       <div class="modal__panel" role="document">
         <header class="modal__header">
           <h2 class="modal__title">Create your FetchhIt account</h2>
-          <a class="icon-btn" href="#" aria-label="Close">×</a>
+          <a class="icon-btn" href="#" aria-label="Close">&times;</a>
         </header>
 
         <form id="registerForm" class="modal__form" action="#" method="post" novalidate>
@@ -809,7 +832,7 @@
       <div class="modal__panel modal__panel--wide" role="document">
         <header class="modal__header">
           <h2 class="modal__title">⇄ Compare Devices</h2>
-          <a class="icon-btn" href="#" aria-label="Close">×</a>
+          <a class="icon-btn" href="#" aria-label="Close">&times;</a>
         </header>
         <div class="compare__selectors">
           <div class="compare__selector-col">
@@ -857,13 +880,15 @@
           <a href="#" class="footer__link">Support</a>
           <a href="#" class="footer__link">Privacy</a>
         </div>
-        <p class="footer__meta">© 2025 FetchhIt. All rights reserved.</p>
+        <p class="footer__meta">Â© 2025 FetchhIt. All rights reserved.</p>
       </div>
     </footer>
 
 
   </body>
 </html>
+
+
 
 
 

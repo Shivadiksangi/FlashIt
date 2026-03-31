@@ -1,4 +1,4 @@
-/* FetchhIt minimal auth client (no frameworks) */
+﻿/* FetchhIt minimal auth client (no frameworks) */
 
 
 const STORAGE_KEY = "FetchhIt_auth";
@@ -23,12 +23,7 @@ const ASSET_IMAGE_OPTIONS = Array.isArray(window.ASSET_IMAGE_OPTIONS)
   : [];
 
 function wireAiSuggestion() {
-  const button = $("aiSuggestBtn");
-  if (!button) return;
-
-  button.addEventListener("click", () => {
-    window.open("http://127.0.0.1:8502", "_blank", "noopener,noreferrer");
-  });
+  // AI suggestion now uses a direct anchor link in the template.
 }
 
 const CATEGORY_FALLBACK_DATA = {
@@ -470,6 +465,17 @@ function categoryTagClass(category) {
 function getOriginalPrice(product) {
   const salePrice = Number(product?.price || 0);
   const originalPrice = Number(product?.originalPrice || 0);
+  const hasExplicitDiscount = Object.prototype.hasOwnProperty.call(product || {}, "discountPercentage");
+  const explicitDiscount = Number(product?.discountPercentage || 0);
+
+  if (hasExplicitDiscount) {
+    if (explicitDiscount > 0 && explicitDiscount < 100) {
+      const computedOriginalPrice = salePrice / (1 - explicitDiscount / 100);
+      return Math.ceil(computedOriginalPrice / 100) * 100;
+    }
+    return salePrice;
+  }
+
   if (originalPrice > salePrice) return originalPrice;
 
   const seedSource = String(product?._id || product?.name || salePrice);
@@ -489,14 +495,23 @@ function buildProductCard(product) {
   const name = escapeHtml(product?.name || "Untitled Item");
   const price = Number(product?.price || 0);
   const originalPrice = getOriginalPrice(product);
-  const discountPercentage = getDiscountPercentage(price, originalPrice);
+  const explicitDiscount = Number(product?.discountPercentage);
+  const discountPercentage = Number.isFinite(explicitDiscount) && explicitDiscount >= 0
+    ? explicitDiscount
+    : getDiscountPercentage(price, originalPrice);
   const category = escapeHtml(product?.category || "General");
   const image = escapeHtml(product?.image || getFallbackImage(product?.category));
   const description = escapeHtml(product?.description || "New item posted by seller.");
   const tagClass = categoryTagClass(product?.category);
-  const salePriceLabel = `₹ ${price.toLocaleString("en-IN")}`;
-  const originalPriceLabel = `₹ ${originalPrice.toLocaleString("en-IN")}`;
+    const salePriceLabel = `&#8377; ${price.toLocaleString("en-IN")}`;
+    const originalPriceLabel = `&#8377; ${originalPrice.toLocaleString("en-IN")}`;
   const productId = escapeHtml(product?._id || "");
+  const originalPriceHtml = discountPercentage > 0
+    ? `<p class="card__original-price">${originalPriceLabel}</p>`
+    : "";
+  const discountBadgeHtml = discountPercentage > 0
+    ? `<span class="card__discount-badge">${discountPercentage}% OFF</span>`
+    : "";
   const actionHtml = canSellerManageProducts()
     ? `
           <button class="btn btn--outline btn--block item-edit-btn" type="button" data-product-id="${productId}">Edit Item</button>
@@ -516,22 +531,15 @@ function buildProductCard(product) {
         </header>
         <div class="card__price-row">
           <p class="card__price" data-price="${price}">${salePriceLabel}</p>
-          <p class="card__original-price">${originalPriceLabel}</p>
-          <span class="card__discount-badge">${discountPercentage}% OFF</span>
+          ${originalPriceHtml}
+          ${discountBadgeHtml}
         </div>
         <p class="card__hint">${description}</p>
         <div class="card__actions">
           ${actionHtml}
         </div>
       </div>
-    </article>
-  `;
-}
-
-function prependProductCard(product) {
-  const grid = $("content");
-  if (!grid) return;
-  grid.insertAdjacentHTML("afterbegin", buildProductCard(product));
+    </article>`;
 }
 
 function setProducts(products) {
@@ -565,7 +573,7 @@ function showPlaceholder() {
   if (placeholder) placeholder.style.display = "grid";
   if (filters) filters.style.display = "none";
   if (buyer) buyer.style.display = "none";
-  if (incoming) incoming.style.display = "none";
+  setIncomingSectionVisible(false);
 }
 
 function showLoader() {
@@ -577,7 +585,7 @@ function showLoader() {
   if (placeholder) placeholder.style.display = "none";
   if (filters) filters.style.display = "block";
   if (buyer) buyer.style.display = "grid";
-  if (incoming) incoming.style.display = "block";
+  setIncomingSectionVisible(false);
   if (loader) loader.style.display = "grid";
 }
 
@@ -663,7 +671,7 @@ function showGridWithAnimation(items) {
   if (placeholder) placeholder.style.display = "none";
   if (filters) filters.style.display = "block";
   if (buyer) buyer.style.display = "grid";
-  if (incoming) incoming.style.display = "block";
+  setIncomingSectionVisible(false);
   if (loader) loader.style.display = "none";
   grid.style.display = "grid";
   setProducts(items);
@@ -721,6 +729,13 @@ function setBuyerSectionWide(isWide) {
   if (grid) grid.classList.toggle("grid--info", Boolean(isWide));
 }
 
+function setIncomingSectionVisible(isVisible) {
+  const incoming = $("incomingSection");
+  const pageGrid = document.querySelector(".page__grid");
+  if (incoming) incoming.style.display = isVisible ? "block" : "none";
+  if (pageGrid) pageGrid.classList.toggle("page__grid--compact", !isVisible);
+}
+
 function showCustomContent(title, subtitle, bodyHtml) {
   const placeholder = $("logoSection");
   const filters = $("filtersSection");
@@ -734,7 +749,7 @@ function showCustomContent(title, subtitle, bodyHtml) {
   if (placeholder) placeholder.style.display = "none";
   if (filters) filters.style.display = "none";
   if (buyer) buyer.style.display = "grid";
-  if (incoming) incoming.style.display = "none";
+  setIncomingSectionVisible(false);
   if (loader) loader.style.display = "none";
   if (grid) {
     grid.style.display = "grid";
@@ -778,12 +793,18 @@ function getPlatformSnapshot() {
   });
 
   requests.forEach((request) => {
-    const status = String(request?.status || "open").toLowerCase();
-    if (Object.prototype.hasOwnProperty.call(statusMap, status)) {
-      statusMap[status] += 1;
-    } else {
-      statusMap.open += 1;
+    const status = normalizeRequestStatus(request?.status);
+    if (["accepted", "packed", "out_for_delivery", "delivered"].includes(status)) {
+      statusMap.accepted += 1;
+      return;
     }
+
+    if (["declined", "cancelled"].includes(status)) {
+      statusMap.rejected += 1;
+      return;
+    }
+
+    statusMap.open += 1;
   });
 
   const categories = Object.entries(categoryMap)
@@ -801,7 +822,7 @@ function getPlatformSnapshot() {
     sellersLive: new Set(products.map((product) => String(product?.sellerId || "")).filter(Boolean)).size,
     avgTicket: requests.length
       ? Math.round(
-          requests.reduce((sum, request) => sum + Number(request?.offeredPrice || request?.price || 0), 0) /
+          requests.reduce((sum, request) => sum + Number(request?.counterOfferPrice || request?.offeredPrice || request?.price || 0), 0) /
             requests.length
         )
       : 0,
@@ -978,7 +999,7 @@ function showRequestsTab() {
   if (placeholder) placeholder.style.display = "none";
   if (filters) filters.style.display = "block";
   if (buyer) buyer.style.display = "grid";
-  if (incoming) incoming.style.display = "block";
+  setIncomingSectionVisible(true);
   if (loader) loader.style.display = "none";
   if (grid) grid.style.display = "grid";
 
@@ -1094,19 +1115,19 @@ function prependBuyerRequest(request, product) {
   const list = $("buyerRequestList");
   if (!list) return;
 
-  const p = product || request?.productId || {};
-  const name = escapeHtml(p?.name || "Requested item");
-  const category = escapeHtml(p?.category || "General");
-  const price = Number(p?.price || 0);
-  const status = escapeHtml(request?.status || "pending");
-  const badgeClass = status === "accepted" ? "badge badge--active" : "badge";
-  const label = status.charAt(0).toUpperCase() + status.slice(1);
+  const p = product || {};
+  const name = escapeHtml(request?.itemName || p?.name || "Requested item");
+  const category = escapeHtml(request?.category || p?.category || "General");
+  const price = Number(request?.counterOfferPrice || request?.offeredPrice || request?.price || p?.price || 0);
+  const status = normalizeRequestStatus(request?.status);
+  const badgeClass = requestBadgeClass(status);
+  const label = requestStatusLabel(status);
 
   const html = `
     <li class="request">
       <div class="request__main">
         <p class="request__name">${name}</p>
-        <p class="request__meta">₹ ${price.toLocaleString("en-IN")} • ${category}</p>
+        <p class="request__meta">&#8377; ${price.toLocaleString("en-IN")} • ${category}</p>
       </div>
       <span class="${badgeClass}">${label}</span>
     </li>
@@ -1121,6 +1142,106 @@ function paymentLabel(value) {
   if (value === "bank_transfer") return "Bank Transfer";
   if (value === "cash_on_delivery") return "Cash on Delivery";
   return value;
+}
+
+function deliveryModeLabel(value) {
+  if (!value) return "Home Delivery";
+  if (value === "home_delivery") return "Home Delivery";
+  if (value === "pickup") return "Pickup";
+  if (value === "meetup") return "Meetup";
+  return value;
+}
+
+function generateDealId() {
+  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `FH-${stamp}-${random}`;
+}
+
+function normalizeRequestStatus(value) {
+  return String(value || "new").trim().toLowerCase();
+}
+
+function requestStatusLabel(status) {
+  const labels = {
+    new: "New",
+    pending: "Pending",
+    need_more_details: "Need More Details",
+    counter_offer: "Counter Offer",
+    accepted: "Accepted",
+    packed: "Packed",
+    out_for_delivery: "Out for Delivery",
+    delivered: "Delivered",
+    declined: "Declined",
+    cancelled: "Cancelled",
+  };
+  return labels[normalizeRequestStatus(status)] || "New";
+}
+
+function requestBadgeClass(status) {
+  const normalized = normalizeRequestStatus(status);
+  if (["accepted", "packed", "out_for_delivery", "delivered"].includes(normalized)) {
+    return "badge badge--active";
+  }
+  if (["declined", "cancelled"].includes(normalized)) {
+    return "badge badge--danger";
+  }
+  if (["counter_offer", "need_more_details"].includes(normalized)) {
+    return "badge badge--warning";
+  }
+  return "badge";
+}
+
+function getRequestStatusActions(request) {
+  const status = normalizeRequestStatus(request?.status);
+  const requestId = escapeHtml(request?.id || "");
+  const makeButton = (nextStatus, label, className = "") => (
+    `<button class="request-action ${className}".trim() type="button" data-request-id="${requestId}" data-status="${nextStatus}">${label}</button>`
+  );
+
+  if (["new", "pending", "need_more_details", "counter_offer"].includes(status)) {
+    return `
+      <div class="request__actions">
+        ${makeButton("accepted", "Accept", "request-action--accept")}
+        ${makeButton("counter_offer", "Counter Offer", "request-action--counter")}
+        ${makeButton("pending", "Pending", "request-action--pending")}
+        ${makeButton("need_more_details", "Need More Details", "request-action--details")}
+        ${makeButton("declined", "Decline", "request-action--reject")}
+      </div>
+    `;
+  }
+
+  if (status === "accepted") {
+    return `
+      <div class="request__actions">
+        ${makeButton("packed", "Packed", "request-action--accept")}
+        ${makeButton("out_for_delivery", "Out for Delivery", "request-action--pending")}
+        ${makeButton("delivered", "Delivered", "request-action--accept")}
+        ${makeButton("cancelled", "Cancel", "request-action--reject")}
+      </div>
+    `;
+  }
+
+  if (status === "packed") {
+    return `
+      <div class="request__actions">
+        ${makeButton("out_for_delivery", "Out for Delivery", "request-action--pending")}
+        ${makeButton("delivered", "Delivered", "request-action--accept")}
+        ${makeButton("cancelled", "Cancel", "request-action--reject")}
+      </div>
+    `;
+  }
+
+  if (status === "out_for_delivery") {
+    return `
+      <div class="request__actions">
+        ${makeButton("delivered", "Delivered", "request-action--accept")}
+        ${makeButton("cancelled", "Cancel", "request-action--reject")}
+      </div>
+    `;
+  }
+
+  return "";
 }
 
 function setRequestsPanelMeta(title, subtitle) {
@@ -1143,9 +1264,13 @@ function getRequests() {
 function addRequest(requestData) {
   const all = getRequests();
   const entry = {
-    id: `rq_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    id: `rq_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` ,
     createdAt: new Date().toISOString(),
-    status: "open",
+    status: "new",
+    sellerNote: "",
+    counterOfferPrice: null,
+    dealId: "",
+    deliveryMode: "home_delivery",
     ...requestData,
   };
   all.unshift(entry);
@@ -1154,11 +1279,18 @@ function addRequest(requestData) {
   return entry;
 }
 
-function updateRequestStatus(requestId, status) {
+function updateRequestStatus(requestId, status, extraUpdates = {}) {
   const all = getRequests();
+  const normalizedStatus = normalizeRequestStatus(status);
   const next = all.map((request) => (
     request.id === requestId
-      ? { ...request, status, updatedAt: new Date().toISOString() }
+      ? {
+          ...request,
+          status: normalizedStatus,
+          ...extraUpdates,
+          dealId: extraUpdates.dealId || request.dealId || (normalizedStatus === "accepted" ? generateDealId() : ""),
+          updatedAt: new Date().toISOString(),
+        }
       : request
   ));
   localStorage.setItem(REQUESTS_KEY, JSON.stringify(next));
@@ -1182,9 +1314,9 @@ function renderRequestsList(requests, role) {
 
   list.innerHTML = requests
     .map((r) => {
-      const status = String(r.status || "open").toLowerCase();
-      const badgeClass = status === "accepted" ? "badge badge--active" : "badge";
-      const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+      const status = normalizeRequestStatus(r.status);
+      const badgeClass = requestBadgeClass(status);
+      const statusLabel = requestStatusLabel(status);
 
       const line1 = role === "seller"
         ? `${escapeHtml(r.itemName || "Item")} • ${escapeHtml(r.buyerName || "Buyer")}`
@@ -1194,28 +1326,35 @@ function renderRequestsList(requests, role) {
       const pay = paymentLabel(r.paymentMethod);
       const buyerMeta = role === "seller" ? ` • ${escapeHtml(r.buyerEmail || "No email")}` : "";
       const line2 = `Offer: ${offered} • ${pay}${buyerMeta}`;
+      const deliveryModeLine = `Delivery mode: ${escapeHtml(deliveryModeLabel(r.deliveryMode))}`;
       const deliveryLine = role === "seller"
         ? `${escapeHtml(r.deliveryName || "No name")} • ${escapeHtml(r.deliveryPhone || "No phone")}`
         : `${escapeHtml(r.deliveryCity || "No city")} • ${escapeHtml(r.deliveryPincode || "No pincode")}`;
       const addressLine = role === "seller"
         ? `${escapeHtml(r.deliveryAddress || "No address")}, ${escapeHtml(r.deliveryCity || "")}`.trim() + ` ${escapeHtml(r.deliveryPincode || "")}`.trim()
         : `Delivery: ${escapeHtml(r.deliveryAddress || "No address")}`;
-      const actionButtons = role === "seller" && status === "open"
-        ? `
-            <div class="request__actions">
-              <button class="request-action request-action--accept" type="button" data-request-id="${escapeHtml(r.id)}" data-status="accepted">Accept</button>
-              <button class="request-action request-action--reject" type="button" data-request-id="${escapeHtml(r.id)}" data-status="rejected">Reject</button>
-            </div>
-          `
+      const dealIdLine = r.dealId
+        ? `<p class="request__meta">Deal ID: ${escapeHtml(r.dealId)}</p>`
         : "";
+      const counterLine = Number(r.counterOfferPrice || 0) > 0
+        ? `<p class="request__meta">Counter offer: ₹ ${Number(r.counterOfferPrice).toLocaleString("en-IN")}</p>`
+        : "";
+      const sellerNoteLine = r.sellerNote
+        ? `<p class="request__meta">Seller note: ${escapeHtml(r.sellerNote)}</p>`
+        : "";
+      const actionButtons = role === "seller" ? getRequestStatusActions(r) : "";
 
       return `
         <li class="request">
           <div class="request__main">
             <p class="request__name">${line1}</p>
             <p class="request__meta">${line2}</p>
+            <p class="request__meta">${deliveryModeLine}</p>
             <p class="request__meta">${deliveryLine}</p>
             <p class="request__meta">${addressLine}</p>
+            ${dealIdLine}
+            ${counterLine}
+            ${sellerNoteLine}
             ${actionButtons}
           </div>
           <span class="${badgeClass}">${statusLabel}</span>
@@ -1255,7 +1394,42 @@ function wireRequestStatusActions() {
     const status = button.dataset.status || "";
     if (!requestId || !status) return;
 
-    updateRequestStatus(requestId, status);
+    const nextStatus = normalizeRequestStatus(status);
+    const updates = {};
+
+    if (nextStatus === "counter_offer") {
+      const current = getRequests().find((request) => request.id === requestId);
+      const defaultValue = String(current?.counterOfferPrice || current?.offeredPrice || current?.price || "");
+      const value = window.prompt("Enter counter offer price", defaultValue);
+      if (value === null) return;
+      const counterOfferPrice = Number(value);
+      if (!Number.isFinite(counterOfferPrice) || counterOfferPrice <= 0) {
+        window.alert("Enter a valid counter offer price.");
+        return;
+      }
+      updates.counterOfferPrice = counterOfferPrice;
+      updates.sellerNote = `Counter offer shared at ₹ ${counterOfferPrice.toLocaleString("en-IN")}.`;
+    } else if (nextStatus === "need_more_details") {
+      const value = window.prompt("What more details do you need from the buyer?", "");
+      if (value === null) return;
+      updates.sellerNote = value.trim() || "Seller asked for more details.";
+    } else if (nextStatus === "declined") {
+      updates.sellerNote = "Seller declined this request.";
+    } else if (nextStatus === "pending") {
+      updates.sellerNote = "Seller marked this request as pending review.";
+    } else if (nextStatus === "accepted") {
+      updates.sellerNote = "Seller accepted this request.";
+    } else if (nextStatus === "packed") {
+      updates.sellerNote = "Seller marked the order as packed.";
+    } else if (nextStatus === "out_for_delivery") {
+      updates.sellerNote = "Seller marked the order as out for delivery.";
+    } else if (nextStatus === "delivered") {
+      updates.sellerNote = "Seller marked the order as delivered.";
+    } else if (nextStatus === "cancelled") {
+      updates.sellerNote = "Seller cancelled this request.";
+    }
+
+    updateRequestStatus(requestId, nextStatus, updates);
     renderRequests();
     renderRequestsCards();
   });
@@ -1267,10 +1441,16 @@ function renderRequestsCards() {
     const image = escapeHtml(r.image || getFallbackImage(r.category));
     const name = escapeHtml(r.itemName || "Requested item");
     const category = escapeHtml(r.category || "General");
-    const price = Number(r.offeredPrice || r.price || 0);
-    const status = String(r.status || "open").toLowerCase();
-    const badge = status === "accepted" ? "tag tag--electronics" : "tag tag--mobiles";
-    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+    const price = Number(r.counterOfferPrice || r.offeredPrice || r.price || 0);
+    const status = normalizeRequestStatus(r.status);
+    const deliveryMode = escapeHtml(deliveryModeLabel(r.deliveryMode));
+    const dealIdLine = r.dealId ? `<p class="card__hint">Deal ID: ${escapeHtml(r.dealId)}</p>` : "";
+    const badge = ["accepted", "packed", "out_for_delivery", "delivered"].includes(status)
+      ? "tag tag--electronics"
+      : ["declined", "cancelled"].includes(status)
+        ? "tag tag--fashion"
+        : "tag tag--mobiles";
+    const statusLabel = requestStatusLabel(status);
     return `
       <article class="card" role="listitem">
         <div class="card__media"><img class="card__img" src="${image}" alt="${name}" loading="lazy" /></div>
@@ -1280,7 +1460,8 @@ function renderRequestsCards() {
             <span class="${badge}">${statusLabel}</span>
           </header>
           <p class="card__price">₹ ${price.toLocaleString("en-IN")}</p>
-          <p class="card__hint">${category} • ${paymentLabel(r.paymentMethod)}</p>
+          <p class="card__hint">${category} • ${paymentLabel(r.paymentMethod)} • ${deliveryMode}</p>
+          ${dealIdLine}
         </div>
       </article>
     `;
@@ -1436,6 +1617,8 @@ function wireLogout() {
 function resetPostItemForm() {
   editingProductId = "";
   $("postItemForm")?.reset();
+  if ($("itemDiscount")) $("itemDiscount").value = "";
+  if ($("postItemDelete")) $("postItemDelete").hidden = true;
   if ($("postItemModalTitle")) $("postItemModalTitle").textContent = "Post an Item (Seller)";
   setButtonLoading("postItemSubmit", false, "Saving...", "Post Item");
   showError("postItemError", "");
@@ -1444,15 +1627,39 @@ function resetPostItemForm() {
 
 function openPostItemEditor(product) {
   editingProductId = product?._id || "";
+  if ($("postItemDelete")) $("postItemDelete").hidden = false;
   if ($("postItemModalTitle")) $("postItemModalTitle").textContent = "Edit Item (Seller)";
   if ($("itemName")) $("itemName").value = product?.name || "";
   if ($("itemPrice")) $("itemPrice").value = Number(product?.price || 0) || "";
+  if ($("itemDiscount")) $("itemDiscount").value = Number(product?.discountPercentage || 0) || "";
   if ($("itemCategory")) $("itemCategory").value = product?.category || "Mobiles";
   if ($("itemImage")) $("itemImage").value = String(product?.image || "").replace("/static/assets/", "");
   if ($("itemDescription")) $("itemDescription").value = product?.description || "";
   showError("postItemError", "");
   showError("postItemSuccess", "");
   window.location.hash = "post-modal";
+}
+
+function deleteCurrentEditingItem() {
+  if (!editingProductId) {
+    showError("postItemError", "Open an existing item to delete it.");
+    return;
+  }
+
+  const productId = String(editingProductId);
+  deleteEditableProduct(productId);
+  PRODUCT_CACHE = PRODUCT_CACHE.filter((item) => String(item?._id) !== productId);
+  CATEGORY_DATA = buildCategoryData(PRODUCT_CACHE);
+  resetPostItemForm();
+  closeModal();
+
+  if (canSellerManageProducts()) {
+    showRequestsTab();
+  } else {
+    applyFilters(activeCategory, { skipLoader: true });
+  }
+
+  setRequestDealMessage("Item deleted successfully.", false);
 }
 
 function wirePostItemForm() {
@@ -1477,6 +1684,7 @@ function wirePostItemForm() {
     const payload = {
       name: $("itemName")?.value?.trim() || "",
       price: Number($("itemPrice")?.value || 0),
+      discountPercentage: Number($("itemDiscount")?.value || 0),
       category: $("itemCategory")?.value || "",
       image: normalizeAssetImagePath($("itemImage")?.value, $("itemCategory")?.value || ""),
       description: $("itemDescription")?.value?.trim() || "",
@@ -1484,8 +1692,18 @@ function wirePostItemForm() {
       sellerName: auth.user.name,
     };
 
+    payload.discountPercentage = Number.isFinite(payload.discountPercentage) ? payload.discountPercentage : 0;
+    payload.discountPercentage = Math.max(0, Math.min(90, Math.round(payload.discountPercentage)));
+    payload.originalPrice = payload.discountPercentage > 0
+      ? Math.ceil((payload.price / (1 - payload.discountPercentage / 100)) / 100) * 100
+      : payload.price;
+
     if (!payload.name || !payload.category || !payload.price) {
       showError("postItemError", "Name, price and category are required.");
+      return;
+    }
+    if (payload.discountPercentage < 0 || payload.discountPercentage > 90) {
+      showError("postItemError", "Discount must be between 0 and 90.");
       return;
     }
     if (!payload.image) {
@@ -1529,6 +1747,17 @@ function wirePostItemForm() {
       const isEditing = Boolean(editingProductId);
       setButtonLoading("postItemSubmit", false, isEditing ? "Saving..." : "Posting item...", isEditing ? "Save Changes" : "Post Item");
     }
+  });
+}
+
+function wirePostItemDelete() {
+  const button = $("postItemDelete");
+  if (!button) return;
+
+  button.addEventListener("click", () => {
+    showError("postItemError", "");
+    showError("postItemSuccess", "");
+    deleteCurrentEditingItem();
   });
 }
 
@@ -1663,6 +1892,7 @@ function wireDealForm() {
       offeredPrice: Number($("dealOfferedPrice")?.value || 0),
       paymentMethod: $("dealPaymentMethod")?.value || "",
       message: $("dealMessage")?.value?.trim() || "",
+      deliveryMode: $("dealDeliveryMode")?.value || "home_delivery",
       deliveryName: $("dealBuyerName")?.value?.trim() || "",
       deliveryPhone: $("dealBuyerPhone")?.value?.trim() || "",
       deliveryAddress: $("dealBuyerAddress")?.value?.trim() || "",
@@ -1670,7 +1900,7 @@ function wireDealForm() {
       deliveryPincode: $("dealBuyerPincode")?.value?.trim() || "",
     };
 
-    if (!payload.productId || !payload.offeredPrice || !payload.paymentMethod || !payload.deliveryName || !payload.deliveryPhone || !payload.deliveryAddress || !payload.deliveryCity || !payload.deliveryPincode) {
+    if (!payload.productId || !payload.offeredPrice || !payload.paymentMethod || !payload.deliveryMode || !payload.deliveryName || !payload.deliveryPhone || !payload.deliveryAddress || !payload.deliveryCity || !payload.deliveryPincode) {
       showError("dealError", "Please fill in price, payment method, and all delivery details.");
       return;
     }
@@ -1692,12 +1922,13 @@ function wireDealForm() {
         buyerName: auth.user.name,
         buyerEmail: auth.user.email,
         productId: currentDealProduct?.id || payload.productId,
-        itemName: currentDealProduct?.itemName || "Requested item",
+        itemName: currentDealProduct?.name || currentDealProduct?.itemName || "Requested item",
         category: currentDealProduct?.category || "General",
         image: currentDealProduct?.image || getFallbackImage(currentDealProduct?.category),
         price: currentDealProduct?.price || payload.offeredPrice,
         offeredPrice: payload.offeredPrice,
         paymentMethod: payload.paymentMethod,
+        deliveryMode: payload.deliveryMode,
         message: payload.message,
         deliveryName: payload.deliveryName,
         deliveryPhone: payload.deliveryPhone,
@@ -1746,6 +1977,7 @@ document.addEventListener("DOMContentLoaded", () => {
   wireLogout();
   wireRequestsButton();
   wirePostItemForm();
+  wirePostItemDelete();
   wirePostItemTriggers();
   wireRequestDealActions();
   wireDealForm();
@@ -1761,7 +1993,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-/* ── Device Comparison ──────────────────────────────── */
+/* Device Comparison */
 
 // Each device has a unique real image URL + full specs
 
@@ -1804,7 +2036,7 @@ const DEVICE_SPECS = [
     category: "Electronics",
     price: 79900,
     imgSrc: "/static/assets/mackbook.jpg",
-    specs: { "Display": "13.3\" IPS Retina 2560×1600", "Processor": "Apple M1 (8-core)", "RAM": "8 GB Unified", "Storage": "256 GB SSD", "GPU": "7-core GPU", "Battery": "Up to 18 hrs", "OS": "macOS", "Weight": "1.29 kg", "Ports": "2× USB-C Thunderbolt" },
+    specs: { "Display": "13.3\" IPS Retina 2560Ã—1600", "Processor": "Apple M1 (8-core)", "RAM": "8 GB Unified", "Storage": "256 GB SSD", "GPU": "7-core GPU", "Battery": "Up to 18 hrs", "OS": "macOS", "Weight": "1.29 kg", "Ports": "2Ã— USB-C Thunderbolt" },
   },
   {
     id: "dell-xps15",
@@ -1812,14 +2044,14 @@ const DEVICE_SPECS = [
     category: "Electronics",
     price: 149900,
     imgSrc: "/static/assets/dell.jpg",
-    specs: { "Display": "15.6\" OLED 3.5K 60Hz", "Processor": "Intel Core i7-12700H", "RAM": "16 GB DDR5", "Storage": "512 GB NVMe SSD", "GPU": "NVIDIA RTX 3050 Ti", "Battery": "Up to 12 hrs", "OS": "Windows 11", "Weight": "1.86 kg", "Ports": "2× Thunderbolt 4, USB-A" },
+    specs: { "Display": "15.6\" OLED 3.5K 60Hz", "Processor": "Intel Core i7-12700H", "RAM": "16 GB DDR5", "Storage": "512 GB NVMe SSD", "GPU": "NVIDIA RTX 3050 Ti", "Battery": "Up to 12 hrs", "OS": "Windows 11", "Weight": "1.86 kg", "Ports": "2Ã— Thunderbolt 4, USB-A" },
   },
   {
     id: "sony-wh1000xm5",
     name: "Sony WH-1000XM5 Headphones",
     category: "Electronics",
     price: 29990,
-    image: "./assets/sony.jpg",
+    imgSrc: "/static/assets/headphones.jpg",
     specs: { "Type": "Over-ear Wireless", "ANC": "Yes (industry-leading)", "Driver": "30 mm", "Battery Life": "30 hrs (ANC on)", "Charging": "USB-C", "Bluetooth": "5.2", "Codecs": "LDAC, AAC, SBC", "Weight": "250 g" },
   },
 ];
@@ -1862,7 +2094,7 @@ function renderCompareCard(el, device, side) {
       />
     </div>
     <div class="compare__card__body">
-      <div class="compare__card__cat">${escapeHtml(device.category)} · Device ${escapeHtml(side)}</div>
+      <div class="compare__card__cat">${escapeHtml(device.category)} Â· Device ${escapeHtml(side)}</div>
       <div class="compare__card__name">${escapeHtml(device.name)}</div>
       <div class="compare__card__price">₹ ${device.price.toLocaleString("en-IN")}</div>
     </div>
@@ -1886,7 +2118,7 @@ function buildCompareRow(label, valA, valB) {
   </tr>`;
 }
 
-// Main comparison renderer — called with two device objects
+// Main comparison renderer called with two device objects
 function renderComparison(devA, devB) {
   // Render image cards
   renderCompareCard($("compareCardA"), devA, "A");
@@ -1947,6 +2179,13 @@ function wireCompareModal() {
 document.addEventListener("DOMContentLoaded", () => {
   wireCompareModal();
 });
+
+
+
+
+
+
+
 
 
 

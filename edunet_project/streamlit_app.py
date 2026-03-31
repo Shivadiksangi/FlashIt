@@ -4,7 +4,12 @@ import google.generativeai as genai
 import streamlit as st
 
 
-api_key = os.getenv("GEMINI_API_KEY") or st.secrets.get("GEMINI_API_KEY", "")
+try:
+    streamlit_api_key = st.secrets.get("AIzaSyBBmhvp54PldhNBxVdlm1EvwVbfv_xiZec", "")
+except Exception:
+    streamlit_api_key = "AIzaSyBBmhvp54PldhNBxVdlm1EvwVbfv_xiZec"
+
+api_key = os.getenv("AIzaSyBBmhvp54PldhNBxVdlm1EvwVbfv_xiZec", "").strip() or str(streamlit_api_key).strip()
 model = None
 
 if api_key:
